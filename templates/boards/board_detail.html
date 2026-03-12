@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ board.name }}{% endblock %}
+
+{% block main_class %}container-fluid mt-4{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <h2>{{ board.name }}</h2>
+    <p class="text-muted">{{ board.workspace.name }}</p>
+</div>
+
+<div class="d-flex gap-3 overflow-auto pb-3">
+    {% for list in lists %}
+        <div class="board-list">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">{{ list.name }}</h5>
+                <span class="badge bg-secondary task-count">{{ list.tasks.count }}</span>
+            </div>
+            
+            <div class="task-list" data-list-id="{{ list.id }}">
+                {% for task in list.tasks.all %}
+                    <div class="task-card" data-task-id="{{ task.id }}">
+                        <a href="{% url 'tasks:task_detail' task.pk %}" class="text-decoration-none text-dark d-block">
+                            <h6 class="mb-2">{{ task.title }}</h6>
+                            {% if task.priority != 'medium' %}
+                                <span class="priority-badge priority-{{ task.priority }}">
+                                    {{ task.get_priority_display }}
+                                </span>
+                            {% endif %}
+                            {% if task.assigned_to.exists %}
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-person"></i>
+                                        {% for user in task.assigned_to.all %}
+                                            {{ user.username }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <a href="{% url 'tasks:task_create' list.pk %}" class="btn btn-sm btn-outline-secondary w-100 mt-2">
+                <i class="bi bi-plus"></i> Nueva tarea
+            </a>
+        </div>
+    {% endfor %}
+    
+    <div class="board-list" style="min-width: 280px; background: transparent; border: 2px dashed #ccc;">
+        <a href="{% url 'boards:list_create' board.pk %}" class="btn btn-outline-secondary w-100">
+            <i class="bi bi-plus"></i> Nueva lista
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- SortableJS for Drag & Drop -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script src="{% static 'js/board.js' %}"></script>
+{% endblock %}
